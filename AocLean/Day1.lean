@@ -27,12 +27,17 @@ namespace NumeralParser
   #eval (Lean.Parsec.pstring "0" <|> Lean.Parsec.pstring "zero") "0".iter
   #eval Lean.Parsec.pstring "ba" "ba".iter
 
+-- TODO generalize to any sequence
+def Lean.Parsec.oneOf (xs: Array (Lean.Parsec a)):= xs.foldl (· <|> ·) (Lean.Parsec.fail "empty input")
+def nine'' := Lean.Parsec.oneOf #[Lean.Parsec.pstring "nine", Lean.Parsec.pstring "enin", Lean.Parsec.pstring "9"]
+#eval nine'' "nine".iter
+#eval nine "nine".iter
 end NumeralParser
 
 def String.reverse (s : String) : String := s.toList.reverse.map Char.toString |> .join
 #eval "a132".reverse = "231a"
 
-private def Char.toDigit
+def Char.toDigit
   | '0' => 0
   | '1' => 1
   | '2' => 2
