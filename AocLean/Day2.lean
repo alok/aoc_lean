@@ -3,9 +3,6 @@ import Lean
 import AocLean.Day1
 
 
-
-
-
 /-
 For example, the record of a few games might look like this:
 
@@ -48,7 +45,7 @@ Game 2: 1 blue, 2 green; 3 green, 4 blue, 1 red; 1 green, 1 blue
 format: semicolon delimited games, comma delimited draws, space delimited cubes
 game: sepBy ; (sepBy , (sepBy space cube))
 -/
-
+-- TODO is sepBy defined?
 inductive Color where
 | r
 | g
@@ -73,6 +70,9 @@ abbrev Game := Array Draw
 
 def LINE := "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green; Game 123: 1 red"
 
+-- impl notation so Float64[a,b,c] will coerce to Float64
+syntax "Draw[" term "]" : termn
+#eval Draw[1]
 namespace Parser
 
 def Lean.Parsec.oneOf (xs: Array (Lean.Parsec a)):= xs.foldl (· <|> ·) (Lean.Parsec.fail "empty")
@@ -128,3 +128,17 @@ def parseLine (line: String) : Draw :=
     { red := red.head!, green := green.head!, blue := blue.head! }
   )
   { red := draws.head!, green := draws.head!, blue := draws.head! }
+
+def sepBy1 (p : Lean.Parsec String) (sep : Lean.Parsec String) : Lean.Parsec (Array String) :=
+  do
+    let x ← p
+    let xs ← Lean.Parsec.many (sep >> p)
+    return (x :: xs)
+
+instance : HAndThen (Lean.Parsec a) (Lean.Parsec b) (Lean.Parsec b) where
+  hAndThen p q := do
+    let _ ← p
+    q ()
+
+def sepBy {α β : Type} (p : Lean.Parsec α) (sep : Lean.Parsec β) : Lean.Parsec (Array α) :=
+  sepBy1 p sep <|> Lean.Parsec.pure []
