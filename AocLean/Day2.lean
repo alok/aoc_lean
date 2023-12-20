@@ -1,7 +1,7 @@
 import Lake
 import Lean
 import AocLean.Day1
-
+import AocLean.Basic
 
 /-
 For example, the record of a few games might look like this:
@@ -71,11 +71,9 @@ abbrev Game := Array Draw
 def LINE := "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green; Game 123: 1 red"
 
 -- impl notation so Float64[a,b,c] will coerce to Float64
-syntax "Draw[" term "]" : termn
-#eval Draw[1]
+-- syntax "Draw[" term "]" : term
+-- #eval Draw[1]
 namespace Parser
-
-def Lean.Parsec.oneOf (xs: Array (Lean.Parsec a)):= xs.foldl (· <|> ·) (Lean.Parsec.fail "empty")
 
 structure Matrix (rows: Nat) (cols: Nat) (α: Type) where
   data : Array (Array α)
@@ -113,32 +111,32 @@ def tryParse (line: String) : Option Draw := do
   .none
 
 #eval tryParse "a"
-def parseLine (line: String) : Draw :=
-  let draws := line.splitOn "; "
-  let draws := draws.map (fun (draw: String) => draw.splitOn ", ")
-  let draws := draws.map (fun (draw: List String) =>
-    let cubes := draw.map (fun (cube: String) =>
-      let count := (cube.splitOn " ").get! 0|>.toNat!
-      let color := (cube.splitOn " ").get! 1|>.toNat!
-      { count := count, color := color }
-    )
-    let red := cubes.filter (fun (cube: Cube) => cube.color == Color.r)
-    let green := cubes.filter (fun (cube: Cube) => cube.color == Color.g)
-    let blue := cubes.filter (fun (cube: Cube) => cube.color == Color.b)
-    { red := red.head!, green := green.head!, blue := blue.head! }
-  )
-  { red := draws.head!, green := draws.head!, blue := draws.head! }
+-- def parseLine (line: String) : Draw :=
+--   let draws := line.splitOn "; "
+--   let draws := draws.map (fun (draw: String) => draw.splitOn ", ")
+--   let draws := draws.map (fun (draw: List String) =>
+--     let cubes := draw.map (fun (cube: String) =>
+--       let count := (cube.splitOn " ").get! 0|>.toNat!
+--       let color := (cube.splitOn " ").get! 1|>.toNat!
+--       { count := count, color := color }
+--     )
+--     let red := cubes.filter (fun (cube: Cube) => cube.color == Color.r)
+--     let green := cubes.filter (fun (cube: Cube) => cube.color == Color.g)
+--     let blue := cubes.filter (fun (cube: Cube) => cube.color == Color.b)
+--     { red := red.head!, green := green.head!, blue := blue.head! }
+--   )
+--   { red := draws.head!, green := draws.head!, blue := draws.head! }
 
-def sepBy1 (p : Lean.Parsec String) (sep : Lean.Parsec String) : Lean.Parsec (Array String) :=
-  do
-    let x ← p
-    let xs ← Lean.Parsec.many (sep >> p)
-    return (x :: xs)
+-- def sepBy1 (p : Lean.Parsec String) (sep : Lean.Parsec String) : Lean.Parsec (Array String) :=
+--   do
+--     let x ← p
+--     let xs ← Lean.Parsec.many (sep >> p)
+--     return (x :: xs)
 
-instance : HAndThen (Lean.Parsec a) (Lean.Parsec b) (Lean.Parsec b) where
-  hAndThen p q := do
-    let _ ← p
-    q ()
+-- instance : HAndThen (Lean.Parsec a) (Lean.Parsec b) (Lean.Parsec b) where
+--   hAndThen p q := do
+--     let _ ← p
+--     q ()
 
-def sepBy {α β : Type} (p : Lean.Parsec α) (sep : Lean.Parsec β) : Lean.Parsec (Array α) :=
-  sepBy1 p sep <|> Lean.Parsec.pure []
+-- def sepBy {α β : Type} (p : Lean.Parsec α) (sep : Lean.Parsec β) : Lean.Parsec (Array α) :=
+--   sepBy1 p sep <|> Lean.Parsec.pure []

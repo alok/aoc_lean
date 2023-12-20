@@ -1,6 +1,6 @@
 import Lake
 import Lean
-
+import AocLean.Basic
 namespace NumeralParser
   def zero := Lean.Parsec.pstring "zero" <|> Lean.Parsec.pstring "0"
   def one := Lean.Parsec.pstring "one" <|> Lean.Parsec.pstring "1"
@@ -27,8 +27,10 @@ namespace NumeralParser
   #eval (Lean.Parsec.pstring "0" <|> Lean.Parsec.pstring "zero") "0".iter
   #eval Lean.Parsec.pstring "ba" "ba".iter
 
+
+
 -- TODO generalize to any sequence
-def Lean.Parsec.oneOf (xs: Array (Lean.Parsec a)):= xs.foldl (· <|> ·) (Lean.Parsec.fail "empty input")
+
 def nine'' := Lean.Parsec.oneOf #[Lean.Parsec.pstring "nine", Lean.Parsec.pstring "enin", Lean.Parsec.pstring "9"]
 #eval nine'' "nine".iter
 #eval nine "nine".iter
@@ -75,14 +77,17 @@ open NumeralParser in
 /-reversed parsers-/
 def numeral' := zero' <|> one' <|> two' <|> three' <|> four' <|> five' <|> six' <|> seven' <|> eight' <|> nine'
 
-/- Brute force search for answer.-/
-partial def String.firstNumeral (s:String) (parser: Lean.Parsec String := numeral) :=
+def tryParseAll (s:String) (parser: Lean.Parsec String) :=
   match Lean.Parsec.attempt parser s.iter with
   | .success _ res => res
   -- only advance by 1 in case another match can happen right after
-  | .error ..   => s.iter.next.remainingToString.firstNumeral parser
+  | .error ..   => tryParseAll s.iter.next.remainingToString parser
 
-partial def String.lastNumeral (s:String) (parser:=numeral'):= s.reverse.firstNumeral parser
+
+partial def String.firstNumeral := tryParseAll (parser:=numeral)
+
+
+partial def String.lastNumeral (s:String) (parser:=numeral'):= tryParseAll s.reverse.firstNumeral parser
 
 
 #eval "five".firstNumeral.toDigit == 5
